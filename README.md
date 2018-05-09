@@ -37,6 +37,15 @@ it's included correctly in the resulting uberjar:
     </dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>target</exclude>
+          <exclude>nodeapp/src/**</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -49,7 +58,7 @@ it's included correctly in the resulting uberjar:
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/src/main/resources</outputDirectory>
+              <outputDirectory>${basedir}/src/main/resources/nodeapp</outputDirectory>
               <resources>          
                 <resource>
                   <directory>./</directory>
