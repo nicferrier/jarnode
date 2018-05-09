@@ -17,7 +17,7 @@ This pom has shade and a copy resources task which will copy the
 current directory to the *right* maven resources directory so that
 it's included correctly in the resulting uberjar:
 
-```
+```xml
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0">
