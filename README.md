@@ -110,6 +110,34 @@ One needs to be able to exclude certain directories from the top level
 copy (for example the target directory, and the resulting src
 directory should not get copied).
 
+An example nodeapp built like this with the above pom gets a jar file that looks like this:
+
+```
+  drwxrwxrwx         0   9-May-2018  23:34:42  nodeapp/node_modules/xtend/
+  -rw-rw-rw-       545   9-May-2018  23:34:36  nodeapp/node_modules/xtend/.jshintrc
+  -rw-rw-rw-        13   9-May-2018  23:34:36  nodeapp/node_modules/xtend/.npmignore
+  -rw-rw-rw-      1056   9-May-2018  23:34:36  nodeapp/node_modules/xtend/LICENCE
+  -rw-rw-rw-        49   9-May-2018  23:34:36  nodeapp/node_modules/xtend/Makefile
+  -rw-rw-rw-       725   9-May-2018  23:34:36  nodeapp/node_modules/xtend/README.md
+  -rw-rw-rw-       384   9-May-2018  23:34:36  nodeapp/node_modules/xtend/immutable.js
+  -rw-rw-rw-       369   9-May-2018  23:34:36  nodeapp/node_modules/xtend/mutable.js
+  -rw-rw-rw-      1857   9-May-2018  23:34:36  nodeapp/node_modules/xtend/package.json
+  -rw-rw-rw-      1760   9-May-2018  23:34:36  nodeapp/node_modules/xtend/test.js
+  -rw-rw-rw-     54344   9-May-2018  23:34:36  nodeapp/package-lock.json
+  -rw-rw-rw-       791   9-May-2018  23:34:36  nodeapp/package.json
+  -rw-rw-rw-      2751   9-May-2018  23:34:36  nodeapp/pom.xml
+  -rw-rw-rw-        22   9-May-2018  23:34:36  nodeapp/server.js
+  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/
+  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/uk.me.ferrier.nic/
+  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/uk.me.ferrier.nic/nodetest/
+  -rw-rw-rw-      2727   9-May-2018  23:31:06  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.xml
+  -rw-rw-rw-       117   9-May-2018  23:34:36  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.properties
+- ----------  --------  -----------  --------  ------------------------------------------------------------------------------------------------------
+               7791496                         2226 files
+```
+
+which is near perfect.
+
 
 ## Can the template be simpler?
 
