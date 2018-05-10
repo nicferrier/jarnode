@@ -13,9 +13,8 @@ execute the node app.
 
 ## How to make a pom for a node project
 
-This pom has shade and a copy resources task which will copy the
-current directory to the *right* maven resources directory so that
-it's included correctly in the resulting uberjar:
+This pom has shade and a resources definitions which make the node app
+packagable and runnable by jarnode:
 
 ```xml
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -30,45 +29,22 @@ it's included correctly in the resulting uberjar:
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <groupId>uk.me.ferrier.nic</groupId>
+      <artifactId>jarnode</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
+  
   <build>
     <resources>
       <resource>
-        <directory>src/main/resources</directory>
+        <directory>./</directory>
         <excludes>
           <exclude>target</exclude>
-          <exclude>nodeapp/src/**</exclude>
         </excludes>
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/src/main/resources/nodeapp</outputDirectory>
-              <resources>          
-                <resource>
-                  <directory>./</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>              
-            </configuration>            
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -97,6 +73,11 @@ it's included correctly in the resulting uberjar:
                   </includes>
                 </filter>
               </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>uk.me.ferrier.nic.App</mainClass>
+                </transformer>
+              </transformers>
             </configuration>
           </execution>
         </executions>
@@ -113,30 +94,36 @@ directory should not get copied).
 An example nodeapp built like this with the above pom gets a jar file that looks like this:
 
 ```
-  drwxrwxrwx         0   9-May-2018  23:34:42  nodeapp/node_modules/xtend/
-  -rw-rw-rw-       545   9-May-2018  23:34:36  nodeapp/node_modules/xtend/.jshintrc
-  -rw-rw-rw-        13   9-May-2018  23:34:36  nodeapp/node_modules/xtend/.npmignore
-  -rw-rw-rw-      1056   9-May-2018  23:34:36  nodeapp/node_modules/xtend/LICENCE
-  -rw-rw-rw-        49   9-May-2018  23:34:36  nodeapp/node_modules/xtend/Makefile
-  -rw-rw-rw-       725   9-May-2018  23:34:36  nodeapp/node_modules/xtend/README.md
-  -rw-rw-rw-       384   9-May-2018  23:34:36  nodeapp/node_modules/xtend/immutable.js
-  -rw-rw-rw-       369   9-May-2018  23:34:36  nodeapp/node_modules/xtend/mutable.js
-  -rw-rw-rw-      1857   9-May-2018  23:34:36  nodeapp/node_modules/xtend/package.json
-  -rw-rw-rw-      1760   9-May-2018  23:34:36  nodeapp/node_modules/xtend/test.js
-  -rw-rw-rw-     54344   9-May-2018  23:34:36  nodeapp/package-lock.json
-  -rw-rw-rw-       791   9-May-2018  23:34:36  nodeapp/package.json
-  -rw-rw-rw-      2751   9-May-2018  23:34:36  nodeapp/pom.xml
-  -rw-rw-rw-        22   9-May-2018  23:34:36  nodeapp/server.js
-  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/
-  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/uk.me.ferrier.nic/
-  drwxrwxrwx         0   9-May-2018  23:34:42  META-INF/maven/uk.me.ferrier.nic/nodetest/
-  -rw-rw-rw-      2727   9-May-2018  23:31:06  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.xml
-  -rw-rw-rw-       117   9-May-2018  23:34:36  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.properties
-- ----------  --------  -----------  --------  ------------------------------------------------------------------------------------------------------
-               7791496                         2226 files
+  -rw-rw-rw-      1056  10-May-2018  10:10:56  node_modules/xtend/LICENCE
+  -rw-rw-rw-        49  10-May-2018  10:10:56  node_modules/xtend/Makefile
+  -rw-rw-rw-       725  10-May-2018  10:10:56  node_modules/xtend/README.md
+  -rw-rw-rw-       384  10-May-2018  10:10:56  node_modules/xtend/immutable.js
+  -rw-rw-rw-       369  10-May-2018  10:10:56  node_modules/xtend/mutable.js
+  -rw-rw-rw-      1857  10-May-2018  10:10:56  node_modules/xtend/package.json
+  -rw-rw-rw-      1760  10-May-2018  10:10:56  node_modules/xtend/test.js
+  -rw-rw-rw-     54344  10-May-2018  10:10:56  package-lock.json
+  -rw-rw-rw-       791  10-May-2018  10:10:56  package.json
+  -rw-rw-rw-      2958  10-May-2018  10:10:56  pom.xml
+  -rw-rw-rw-        22  10-May-2018  10:10:56  server.js
+  drwxrwxrwx         0  10-May-2018  10:11:00  META-INF/maven/
+  drwxrwxrwx         0  10-May-2018  10:11:00  META-INF/maven/uk.me.ferrier.nic/
+  drwxrwxrwx         0  10-May-2018  10:11:00  META-INF/maven/uk.me.ferrier.nic/nodetest/
+  -rw-rw-rw-      2958  10-May-2018  10:10:32  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.xml
+  -rw-rw-rw-       117  10-May-2018  10:10:56  META-INF/maven/uk.me.ferrier.nic/nodetest/pom.properties
+  -rw-rw-rw-        37   9-May-2018  22:31:58  testfile.js
+  drwxrwxrwx         0  10-May-2018  10:11:00  uk/
+  drwxrwxrwx         0  10-May-2018  10:11:00  uk/me/
+  drwxrwxrwx         0  10-May-2018  10:11:00  uk/me/ferrier/
+  drwxrwxrwx         0  10-May-2018  10:11:00  uk/me/ferrier/nic/
+  -rw-rw-rw-      1733  10-May-2018  10:11:00  uk/me/ferrier/nic/App.class
+  drwxrwxrwx         0  10-May-2018  10:11:00  META-INF/maven/uk.me.ferrier.nic/jarnode/
+  -rw-rw-rw-      4326  10-May-2018  00:17:54  META-INF/maven/uk.me.ferrier.nic/jarnode/pom.xml
+  -rw-rw-rw-       116   9-May-2018  22:17:42  META-INF/maven/uk.me.ferrier.nic/jarnode/pom.properties
+- ----------  --------  -----------  --------  ----------------------------------------------------------------------------------------------
+               7756202                         2235 files
 ```
 
-which is near perfect.
+so the jar contains the correct files including the jarnode bootstrap class "App".
 
 
 ## Can the template be simpler?
