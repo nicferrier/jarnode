@@ -25,8 +25,8 @@ packagable and runnable by jarnode:
   <artifactId>nodetest</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>jarnode</name>
-  <url>http://maven.apache.org</url>
+  <name>nodetest</name>
+  <url>https://github.com/nicferrier/jarnode</url>
   <dependencies>
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
@@ -75,7 +75,7 @@ packagable and runnable by jarnode:
               </filters>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>uk.me.ferrier.nic.App</mainClass>
+                  <mainClass>uk.me.ferrier.nic.jarnode.App</mainClass>
                 </transformer>
               </transformers>
             </configuration>
