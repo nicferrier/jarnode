@@ -25,12 +25,10 @@
     <url>https://github.com/nicferrier/jarnode/issues</url>
   </issueManagement>
 
-  <!--
   <ciManagement>
-    <system>travis-ci</system>
-    <url>https://travis-ci.org/nicferrier/jarnode</url>
-    </ciManagement>
-  -->
+    <system>circleci</system>
+    <url>https://circleci.org/gh/nicferrier/jarnode</url>
+  </ciManagement>
   
   <inceptionYear>2018</inceptionYear>
   <licenses>
@@ -59,37 +57,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>junit:junit</exclude>
-                  <exclude>jmock:*</exclude>
-                  <exclude>*:xml-apis</exclude>
-                  <exclude>org.apache.maven:lib:tests</exclude>
-                  <exclude>log4j:log4j:jar:</exclude>
-                </excludes>
-              </artifactSet>
-              <transformers>
-                <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>uk.me.ferrier.nic.App</mainClass>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>com.github.danielflower.mavenplugins</groupId>
         <artifactId>multi-module-maven-release-plugin</artifactId>
