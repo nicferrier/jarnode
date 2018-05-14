@@ -40,7 +40,7 @@ You need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0.7</version>
     </dependency>
   </dependencies>
   
