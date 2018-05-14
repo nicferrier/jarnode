@@ -1,32 +1,41 @@
-When one works in an enterprise it would be super useful if it was
-possible to package a node app inside a maven wrapper.
+Working in an enterprise Java is king. We have rules about storing
+things in artifact repositories like Sonatype's Nexus or Artifactory
+for Maven.
 
-This should be very easy. Java has the concept of an uberjar, a single
-jar where everything is packaged up (incuding non-class files) and is
-executable.
+It would be great to store nodejs apps in Maven repositories because
+we write a lot of deployment tools around such repositories.
 
-So this is an attempt to make a library that can then be used in maven
-to package a node app.
+## nodejs uberjars
 
-The executable program in this library will be used to extract and
-execute the node app.
+This is a library to support making uberjars from nodejs projects so
+that you can just:
 
-## How to make a pom for a node project
+```
+java -jar nodejs-uberjar-1.0.jar
+```
 
-This pom has shade and a resources definitions which make the node app
-packagable and runnable by jarnode:
+and your node app will run.
+
+
+## How does it work?
+
+You need this POM as pom.xml in your nodejs project:
 
 ```xml
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>uk.me.ferrier.nic</groupId>
-  <artifactId>nodetest</artifactId>
+
+  <groupId>uk.me.ferrier.nic</groupId>              <!-- change this!                  -->
+  <artifactId>nodetest</artifactId>                 <!-- and this!                     -->
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>nodetest</name>
-  <url>https://github.com/nicferrier/jarnode</url>
+  <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
+  <name>nodetest</name>                             <!-- and the project name          -->
+  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+
+  <!-- Nothing else should be changed!!                                                -->
+
   <dependencies>
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
@@ -87,11 +96,64 @@ packagable and runnable by jarnode:
 </project>
 ```
 
-One needs to be able to exclude certain directories from the top level
-copy (for example the target directory, and the resulting src
-directory should not get copied).
+### What should I change the values to?
 
-An example nodeapp built like this with the above pom gets a jar file that looks like this:
+The values that need changing are the ones that describe the resulting
+artifact, your nodejs app.
+
+```
+  <groupId>uk.me.ferrier.nic</groupId>              <!-- change this!                  -->
+  <artifactId>nodetest</artifactId>                 <!-- and this!                     -->
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
+  <name>nodetest</name>                             <!-- and the project name          -->
+  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+```
+
+So choose a maven groupid and artifactid that follow Maven
+conventions, but describe your node app.
+
+Obviously use the url of your github project, or whatever your
+internal VCS is.
+
+## Once I have my POM how do I make the uberjar?
+
+It's super easy. Just go:
+
+```
+mvn clean package
+```
+
+and you'll get your uberjar.
+
+
+## Once I have my uberjar how can I run it?
+
+If you built it with just `mvn package` then you can run it by:
+
+```
+cd target
+java -jar nodetest-1.0-SNAPSHOT.jar
+```
+
+
+## How do I deploy my uberjar?
+
+Usually your Maven setup will have some sort of release plugin that
+you can call to deploy to a Nexus repository.
+
+I work with the lovely @danielflower so I use
+[this](https://github.com/danielflower/multi-module-maven-release-plugin).
+
+Ask your local Maven maven for help.
+
+
+## What does the resulting JAR look like?
+
+Here's a snippet from the end of one of mine. Notice that everything
+is packed inside, node_modules and all.
+
+That's what you'd expect, right? The node_modules are dependencies.
 
 ```
   -rw-rw-rw-      1056  10-May-2018  10:10:56  node_modules/xtend/LICENCE
@@ -123,11 +185,17 @@ An example nodeapp built like this with the above pom gets a jar file that looks
                7756202                         2235 files
 ```
 
-so the jar contains the correct files including the jarnode bootstrap class "App".
+The Java classes in there are the bootstrapping ones that do the
+automatic extraction of the app on exec.
 
 
-## Can the template be simpler?
+## Could this all be easier?
 
-I'm sure a simpler maven plugin (nodejs?) could be made by combining
-the code for copy and shade.
+I expect so. I'm just marvelling in the spectacle right now though!
 
+
+## Acknowledgements
+
+@rajshahuk had this idea in the first place.
+
+@danielflower helped with the maven and the uploading to central.maven.com
