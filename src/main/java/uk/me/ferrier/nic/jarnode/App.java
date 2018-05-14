@@ -1,5 +1,8 @@
 package uk.me.ferrier.nic.jarnode;
 
+import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.Enumeration;
@@ -16,19 +19,29 @@ import java.io.InputStreamReader;
  */
 public class App
 {
+    static class Entry {
+        List<String> list;
+        String name;
+
+        Entry(String name) {
+            this.list = Arrays.asList(new File(name).list());
+            this.name = name;
+        }
+    }
+
     public static void main( String[] args ) throws IOException
     {
-        File temp = File.createTempFile("nodeapp", Long.toString(System.nanoTime()));
+        File tempDir = File.createTempFile("nodeapp", Long.toString(System.nanoTime()));
 
-        if(! (temp.delete())) {
-            throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+        if(! (tempDir.delete())) {
+            throw new IOException("Could not delete temp file: " + tempDir.getAbsolutePath());
         }
 
-        if(! (temp.mkdir())) {
-            throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+        if(! (tempDir.mkdir())) {
+            throw new IOException("Could not create temp directory: " + tempDir.getAbsolutePath());
         }
 
-        System.out.println("nodeapp - " + temp.getAbsolutePath());
+        System.out.println("nodeapp - " + tempDir.getAbsolutePath());
 
         String path = App.class
             .getProtectionDomain()
@@ -41,7 +54,7 @@ public class App
             JarEntry entry = entries.nextElement();
             String entryName = entry.getName();
             if (!entryName.startsWith("META-INF/")) {
-                File f = new File(temp, entryName);
+                File f = new File(tempDir, entryName);
                 if (entry.isDirectory()) {
                     f.mkdir();
                 }
@@ -59,8 +72,23 @@ public class App
             }
         }
 
-        String nodeExe = "/home/nicferrier/.nvm/versions/node/v9.11.1/bin/node";
+        // Find node in the PATH
+        String pathVar = System.getenv().get("PATH");
+        String[] pathParts = pathVar.split(File.pathSeparator);
+        List<String> pathPartList = Arrays.asList(pathParts);
+        List<Entry> nodePath = pathPartList.stream()
+            .filter(p -> new File(p).exists())
+            .map(p -> new Entry(p))
+            .filter(e -> e.list.contains("node"))
+            .collect(Collectors.toList());
+
+        if (nodePath.size() < 1) {
+            System.err.println("node executable not found");
+            System.exit(1);
+        }
+        String nodeExe = nodePath.get(0).name + "/node";
         ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
+        builder.directory(tempDir);
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
