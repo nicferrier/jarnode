@@ -11,7 +11,7 @@ This is a library to support making uberjars from nodejs projects so
 that you can just:
 
 ```
-java -jar nodejs-uberjar-1.0.jar
+java -jar nodejs-uberjar-1.0.9.jar
 ```
 
 and your node app will run.
@@ -40,7 +40,7 @@ You need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0.7</version>
+      <version>1.0.9</version>
     </dependency>
   </dependencies>
   
