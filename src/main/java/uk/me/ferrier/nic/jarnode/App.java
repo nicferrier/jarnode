@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
  */
 public class App
 {
+
     static class Entry {
         List<String> list;
         String name;
@@ -29,7 +30,12 @@ public class App
         }
     }
 
-    public static void main( String[] args ) throws IOException
+    public static void main(String[] argv) throws IOException {
+        System.out.println();
+    }
+
+    
+    public static void main2(String[] args) throws IOException
     {
         File tempDir = File.createTempFile("nodeapp", Long.toString(System.nanoTime()));
 
@@ -73,13 +79,17 @@ public class App
         }
 
         // Find node in the PATH
+        String OS = System.getProperty("os.name");
+        boolean isWin = OS.startsWith("Windows");
+
         String pathVar = System.getenv().get("PATH");
         String[] pathParts = pathVar.split(File.pathSeparator);
         List<String> pathPartList = Arrays.asList(pathParts);
         List<Entry> nodePath = pathPartList.stream()
             .filter(p -> new File(p).exists())
             .map(p -> new Entry(p))
-            .filter(e -> e.list.contains("node"))
+            .filter(e -> e.list.contains("node")
+                    || (isWin && e.list.contains("node.exe")))
             .collect(Collectors.toList());
 
         if (nodePath.size() < 1) {
@@ -87,6 +97,7 @@ public class App
             System.exit(1);
         }
         String nodeExe = nodePath.get(0).name + "/node";
+        nodeExe = isWin? nodeExe + ".exe" : nodeExe;
         ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
         builder.directory(tempDir);
         builder.redirectErrorStream(true);

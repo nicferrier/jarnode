@@ -1,4 +1,4 @@
-package uk.me.ferrier.nic;
+package uk.me.ferrier.nic.jarnode;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
