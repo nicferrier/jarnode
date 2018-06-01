@@ -148,6 +148,23 @@ I work with the lovely @danielflower so I use
 Ask your local Maven maven for help.
 
 
+## I am missing executable permissions on some of my files!
+
+Yes. Jar files don't carry this data. So the jarnode uberjar bootstrap
+program also will switch on the exe permission for any file it finds
+in the file `.exethings`.
+
+A typical build.sh would look like this:
+
+```
+npm install
+find . -executable -type f > .exethings
+mvn package
+```
+
+The `.exethings` could be constructed lots of ways of course.
+
+
 ## What does the resulting JAR look like?
 
 Here's a snippet from the end of one of mine. Notice that everything
