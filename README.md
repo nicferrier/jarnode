@@ -11,7 +11,7 @@ This is a library to support making uberjars from nodejs projects so
 that you can just:
 
 ```
-java -jar nodejs-uberjar-1.0.9.jar
+java -jar nodejs-uberjar-1.0.3.jar
 ```
 
 and your node app will run.
@@ -40,7 +40,7 @@ You need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0.9</version>
+      <version>1.0.12</version>
     </dependency>
   </dependencies>
   
@@ -204,6 +204,30 @@ That's what you'd expect, right? The node_modules are dependencies.
 
 The Java classes in there are the bootstrapping ones that do the
 automatic extraction of the app on exec.
+
+## When it unpacks do we leave a mess everywhere?
+
+The jar unpacks to the same directory as the jar is in into a directory with a leading `.`.
+
+eg:
+
+```
+/home/app $ java -jar nodeuber-3.0.11.jar
+```
+
+will create a directory called: `/home/app/.nodeuber-3.0.11.jar` and
+the node app will exist under there.
+
+If you run the app again it will unpack to the same directory,
+deleting the directory first.
+
+## I lost state I stored in the nodeapp when I restarted!
+
+Yes. Because when you restart we delete the directory. 
+
+Make a containining directory and store the state there?
+
+Or work out another way of doing it and tell us?
 
 
 ## Could this all be easier?
