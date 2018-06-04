@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +39,13 @@ public class App
     }
 
     static File getTargetDir(String sourceJarPath) {
-        Path sourceJar = FileSystems.getDefault().getPath(sourceJarPath);
+        FileSystem fs = FileSystems.getDefault();
+        if (System.getProperty("os.name").startsWith("Windows")
+            && sourceJarPath.startsWith("/")
+            && sourceJarPath.charAt(2) == ':') {
+            sourceJarPath = sourceJarPath.substring(1);
+        }
+        Path sourceJar = fs.getPath(sourceJarPath);
         Path dir = sourceJar.getParent();
         Path name = sourceJar.getFileName();
         File f = new File(dir.toFile(), "." + name);
@@ -132,7 +139,9 @@ public class App
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
 
-        String pathVar = System.getenv().get("PATH");
+        String pathVar = System
+            .getenv()
+            .get(OS.startsWith("Windows") ? "Path" : "PATH");
         String[] pathParts = pathVar.split(File.pathSeparator);
         List<String> pathPartList = Arrays.asList(pathParts);
         List<Entry> nodePath = pathPartList.stream()
