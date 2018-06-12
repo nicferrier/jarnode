@@ -160,7 +160,18 @@ public class App
         ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
-        Process p = builder.start();
+        final Process p = builder.start();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    try {
+                        p.destroy();
+                    }
+                    catch (Exception e) {
+                        System.err.println("error in jarnode shutdown hook");
+                        System.err.print(e);
+                    }
+                }
+            });
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
         String line;
         while (true) {
