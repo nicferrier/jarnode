@@ -41,7 +41,7 @@ You need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0.12</version>
+      <version>1.0.16</version>
     </dependency>
   </dependencies>
   
