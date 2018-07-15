@@ -11,7 +11,7 @@ This is a library to support making uberjars from nodejs projects so
 that you can just:
 
 ```
-java -jar nodejs-uberjar-1.0.3.jar
+java -jar nodejs-uberjar-1.0.16.jar
 ```
 
 
