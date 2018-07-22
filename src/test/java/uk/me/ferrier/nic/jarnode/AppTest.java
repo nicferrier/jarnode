@@ -10,12 +10,11 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class AppTest
     extends TestCase
 {
     /**
@@ -27,8 +26,6 @@ public class AppTest
     {
         super( testName );
     }
-
-    private static Logger LOGGER = Logger.getLogger("InfoLogging");
 
     /**
      * @return the suite of tests being tested
