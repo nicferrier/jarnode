@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * Unit test for simple App.
@@ -26,6 +27,8 @@ public class AppTest
     {
         super( testName );
     }
+
+    private static Logger LOGGER = Logger.getLogger("InfoLogging");
 
     /**
      * @return the suite of tests being tested
@@ -79,5 +82,15 @@ public class AppTest
         File exePath = new File(jarPathDir, ".demojar.jar/" + testExeFile);
         boolean isExe = exePath.canExecute();
         assertTrue( isExe );
+    }
+
+    public void testResourcesFiles() throws Exception {
+        String jarPath = new File("src/test/resources/demojar.jar")
+                .getCanonicalPath();
+        File extractJar = App.extractJar(jarPath);
+        App.copyResourcesFiles(extractJar);
+        File confFilePath = new File("src/test/resources/resources_file.txt");
+        boolean confFileExists = confFilePath.exists();
+        assertTrue( confFileExists );
     }
 }

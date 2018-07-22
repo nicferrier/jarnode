@@ -22,6 +22,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.FileVisitResult;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.apache.commons.io.FileUtils;
+
 /**
  * Boot node apps by reading them out of the uberjar.
  *
@@ -124,6 +126,18 @@ public class App
         }
     }
 
+    static void copyResourcesFiles(File jarDir) throws IOException {
+        File toTransfer = new File(jarDir.getPath() + "/.resourcesthings/");
+        File targetDir = new File(jarDir.getParentFile().getPath());
+        if (toTransfer.exists()) {
+            try {
+                FileUtils.copyDirectory(toTransfer, targetDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException
     {
         String path = App.class
@@ -134,6 +148,7 @@ public class App
 
         File nodeAppJarDir = extractJar(path);
         fixPerms(nodeAppJarDir);
+        copyResourcesFiles(nodeAppJarDir);
 
         // Find node in the PATH
         String OS = System.getProperty("os.name");
