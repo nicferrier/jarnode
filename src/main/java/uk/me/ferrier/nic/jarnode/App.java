@@ -124,6 +124,27 @@ public class App
         }
     }
 
+
+    /*
+
+      support python
+
+      instead of execing python we have to generate a script and exec that in a shell - this is so venvs work:
+
+source .venv/bin/activate
+python t.py
+
+      and then the flow looks something like this:
+
+mkdir demojarplace
+cp demoapp/demo.jar demojarplace
+cd demojarplace
+jar xvf demo.jar 
+cp ~/script . 
+bash script
+
+     */
+
     public static void main(String[] args) throws IOException
     {
         String path = App.class
