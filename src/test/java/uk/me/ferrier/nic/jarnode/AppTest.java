@@ -14,7 +14,7 @@ import java.util.Arrays;
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class AppTest
     extends TestCase
 {
     /**
@@ -79,5 +79,15 @@ public class AppTest
         File exePath = new File(jarPathDir, ".demojar.jar/" + testExeFile);
         boolean isExe = exePath.canExecute();
         assertTrue( isExe );
+    }
+
+    public void testResourcesFiles() throws Exception {
+        String jarPath = new File("src/test/resources/demojar.jar")
+                .getCanonicalPath();
+        File extractJar = App.extractJar(jarPath);
+        App.copyResourcesFiles(extractJar);
+        File confFilePath = new File("src/test/resources/resources_file.txt");
+        boolean confFileExists = confFilePath.exists();
+        assertTrue( confFileExists );
     }
 }
