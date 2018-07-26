@@ -64,7 +64,6 @@ public class App
                         Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
-                    
                     @Override
                     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                         Files.delete(dir);
@@ -139,6 +138,20 @@ public class App
         }
     }
 
+    static String getNodeEntryPointFilename() {
+        String defaultFilename = "server.js";
+        String customFilename = System.getenv("NODE_ENTRY_FILENAME");
+        String fileName = (customFilename != null && !customFilename.isEmpty()) ? customFilename : defaultFilename;
+        return fileName;
+    }
+
+    static String getNodeMemoryLimitArg() {
+        String defaultLimit = "512"; // 512MB is node default
+        String customLimit = System.getenv("NODE_MEMORY_LIMIT");
+        String memLimit = (customLimit != null && !customLimit.isEmpty()) ? customLimit : defaultLimit;
+        return "--max-old-space-size=" + memLimit;
+    }
+
     /*
 
       support python
@@ -153,8 +166,8 @@ python t.py
 mkdir demojarplace
 cp demoapp/demo.jar demojarplace
 cd demojarplace
-jar xvf demo.jar 
-cp ~/script . 
+jar xvf demo.jar
+cp ~/script .
 bash script
 
      */
@@ -193,7 +206,7 @@ bash script
         }
         String nodeExe = nodePath.get(0).name + "/node";
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
-        ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
+        ProcessBuilder builder = new ProcessBuilder(nodeExe, getNodeEntryPointFilename(), getNodeMemoryLimitArg());
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
         final Process p = builder.start();

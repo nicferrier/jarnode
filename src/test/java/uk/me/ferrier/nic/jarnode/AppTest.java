@@ -90,4 +90,14 @@ public class AppTest
         boolean confFileExists = confFilePath.exists();
         assertTrue( confFileExists );
     }
+
+    public void testNodeEntryPointFilename() throws Exception {
+        String arg = App.getNodeEntryPointFilename();
+        assertTrue( arg.equals("server.js") );
+    }
+
+    public void testNodeMemoryLimitArgument() throws Exception {
+        String arg = App.getNodeMemoryLimitArg();
+        assertTrue( arg.equals("--max-old-space-size=512") );
+    }
 }

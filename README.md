@@ -20,7 +20,9 @@ and your node app will run.
 
 ## How does it work?
 
-You need this POM as pom.xml in your nodejs project:
+You'll need a ```server.js``` file to be the entrypoint of your app by default.  (To make jarnode point elsewhere, set a ```NODE_ENTRY_FILENAME``` environment variable)
+
+You also need this POM as pom.xml in your nodejs project:
 
 ```xml
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -44,7 +46,7 @@ You need this POM as pom.xml in your nodejs project:
       <version>1.0.16</version>
     </dependency>
   </dependencies>
-  
+
   <build>
     <resources>
       <resource>
@@ -222,9 +224,15 @@ the node app will exist under there.
 If you run the app again it will unpack to the same directory,
 deleting the directory first.
 
+## I want to specify the max memory limit for my node app
+
+Set a ```NODE_MEMORY_LIMIT``` environment variable stating the limit in **Megabytes** - e.g.  ```NODE_MEMORY_LIMIT=64```
+
+If this environment variable isn't present then max memory allocation is set at 512MB, as per node defaults.
+
 ## I lost state I stored in the nodeapp when I restarted!
 
-Yes. Because when you restart we delete the directory. 
+Yes. Because when you restart we delete the directory.
 
 Make a containining directory and store the state there?
 
