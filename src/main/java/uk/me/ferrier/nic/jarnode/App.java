@@ -24,6 +24,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.commons.io.FileUtils;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.json.simple.JSONObject;
+
+
 /**
  * Boot node apps by reading them out of the uberjar.
  *
@@ -138,16 +143,36 @@ public class App
         }
     }
 
-    static String getNodeEntryPointFilename() {
+    static JSONObject getPackageJsonObject(File jarDir) {
+        try {
+            JSONParser parser = new JSONParser();
+            FileReader jsonFile = new FileReader(jarDir.getPath() + "/package.json");
+            JSONObject json = (JSONObject) parser.parse(jsonFile);
+            return json;
+        }
+        catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static JSONObject getJarnodeJsonObject(JSONObject packageJson) {
+        if(packageJson == null){
+            return null;
+        }
+        return (JSONObject) packageJson.get("jarnode");
+    }
+
+    static String getNodeEntryPointFilename(JSONObject packageJson) {
         String defaultFilename = "server.js";
-        String customFilename = System.getenv("NODE_ENTRY_FILENAME");
+        String customFilename = packageJson != null ? (String) packageJson.get("main") : null;
         String fileName = (customFilename != null && !customFilename.isEmpty()) ? customFilename : defaultFilename;
         return fileName;
     }
 
-    static String getNodeMemoryLimitArg() {
+    static String getNodeMemoryLimitArg(JSONObject jarnodeConfig) {
         String defaultLimit = "512"; // 512MB is node default
-        String customLimit = System.getenv("NODE_MEMORY_LIMIT");
+        String customLimit = jarnodeConfig != null ? (String) jarnodeConfig.get("memoryLimit") : null;
         String memLimit = (customLimit != null && !customLimit.isEmpty()) ? customLimit : defaultLimit;
         return "--max-old-space-size=" + memLimit;
     }
@@ -184,6 +209,9 @@ bash script
         fixPerms(nodeAppJarDir);
         copyResourcesFiles(nodeAppJarDir);
 
+        JSONObject packageJson = getPackageJsonObject(nodeAppJarDir);
+        JSONObject packageJsonJarnodeConfig = getJarnodeJsonObject(packageJson);
+
         // Find node in the PATH
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
@@ -206,7 +234,12 @@ bash script
         }
         String nodeExe = nodePath.get(0).name + "/node";
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
-        ProcessBuilder builder = new ProcessBuilder(nodeExe, getNodeEntryPointFilename(), getNodeMemoryLimitArg());
+
+        ProcessBuilder builder = new ProcessBuilder(
+                nodeExe,
+                getNodeEntryPointFilename(packageJson),
+                getNodeMemoryLimitArg(packageJsonJarnodeConfig));
+
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
         final Process p = builder.start();

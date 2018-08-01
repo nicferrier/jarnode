@@ -20,7 +20,7 @@ and your node app will run.
 
 ## How does it work?
 
-You'll need a ```server.js``` file to be the entrypoint of your app by default.  (To make jarnode point elsewhere, set a ```NODE_ENTRY_FILENAME``` environment variable)
+Jarnode uses the ```main``` property in your ```package.json``` file to get the entrypoint to your app.  If this isn't set, it will use ```server.js``` by default.
 
 You also need this POM as pom.xml in your nodejs project:
 
@@ -226,9 +226,15 @@ deleting the directory first.
 
 ## I want to specify the max memory limit for my node app
 
-Set a ```NODE_MEMORY_LIMIT``` environment variable stating the limit in **Megabytes** - e.g.  ```NODE_MEMORY_LIMIT=64```
+Add the following to your ```package.json```, setting the limit in **megabytes**: (e.g. below is 1024MB)
 
-If this environment variable isn't present then max memory allocation is set at 512MB, as per node defaults.
+```
+"jarnode": {
+    "memoryLimit": "1024"
+}
+```
+
+The max memory allocation is otherwise set at 512MB, as per node defaults.
 
 ## I lost state I stored in the nodeapp when I restarted!
 

@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 
 import java.util.Arrays;
 
+import org.json.simple.JSONObject;
+
 /**
  * Unit test for simple App.
  */
@@ -91,13 +93,45 @@ public class AppTest
         assertTrue( confFileExists );
     }
 
-    public void testNodeEntryPointFilename() throws Exception {
-        String arg = App.getNodeEntryPointFilename();
-        assertTrue( arg.equals("server.js") );
+    public void testGetPackageJsonObject() throws Exception {
+        String jarPath = new File("src/test/resources/demojar.jar")
+                .getCanonicalPath();
+        File extractJar = App.extractJar(jarPath);
+        File jarPathDir = new File(jarPath).getParentFile();
+        File exePath = new File(jarPathDir, ".demojar.jar");
+        JSONObject packageJson = App.getPackageJsonObject(exePath);
+        assertTrue( packageJson != null );
     }
 
-    public void testNodeMemoryLimitArgument() throws Exception {
-        String arg = App.getNodeMemoryLimitArg();
-        assertTrue( arg.equals("--max-old-space-size=512") );
+    public void testNodeEntryPointFilenames() throws Exception {
+        // when there is no package.json
+        String result1 = App.getNodeEntryPointFilename(null);
+        assertTrue( result1.equals("server.js") );
+
+        // when there is a package.json with no main
+        JSONObject fakePackageJson = new JSONObject();
+        String result2 = App.getNodeEntryPointFilename(fakePackageJson);
+        assertTrue( result2.equals("server.js") );
+
+        // when there is a package.json with a main
+        fakePackageJson.put("main", "./entry.js");
+        String result3 = App.getNodeEntryPointFilename(fakePackageJson);
+        assertTrue( result3.equals("./entry.js") );
+    }
+
+    public void testNodeMemoryLimitArguments() throws Exception {
+        // when there is no jarnode config
+        String result1 = App.getNodeMemoryLimitArg(null);
+        assertTrue( result1.equals("--max-old-space-size=512") );
+
+        // when there is jarnode config with no memoryLimit set
+        JSONObject fakePackageJson = new JSONObject();
+        String result2 = App.getNodeMemoryLimitArg(fakePackageJson);
+        assertTrue( result2.equals("--max-old-space-size=512") );
+
+        // when there is jarnode config with memoryLimit set
+        fakePackageJson.put("memoryLimit", "64");
+        String result3 = App.getNodeMemoryLimitArg(fakePackageJson);
+        assertTrue( result3.equals("--max-old-space-size=64") );
     }
 }
