@@ -125,13 +125,13 @@ public class AppTest
         assertTrue( result1.equals("--max-old-space-size=512") );
 
         // when there is jarnode config with no memoryLimit set
-        JSONObject fakePackageJson = new JSONObject();
-        String result2 = App.getNodeMemoryLimitArg(fakePackageJson);
+        JSONObject fakeJarnodeConfig = new JSONObject();
+        String result2 = App.getNodeMemoryLimitArg(fakeJarnodeConfig);
         assertTrue( result2.equals("--max-old-space-size=512") );
 
         // when there is jarnode config with memoryLimit set
-        fakePackageJson.put("memoryLimit", "64");
-        String result3 = App.getNodeMemoryLimitArg(fakePackageJson);
+        fakeJarnodeConfig.put("memoryLimit", "64");
+        String result3 = App.getNodeMemoryLimitArg(fakeJarnodeConfig);
         assertTrue( result3.equals("--max-old-space-size=64") );
     }
 }
