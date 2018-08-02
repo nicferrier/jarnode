@@ -38,6 +38,7 @@ public class AppTest
     /**
      * Test the file creation and destruction logic.
      */
+
     public void testApp() throws IOException
     {
         String targetJar = new File("./somejar.jar").getCanonicalPath();
