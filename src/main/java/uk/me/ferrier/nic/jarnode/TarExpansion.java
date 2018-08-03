@@ -26,9 +26,6 @@ public class TarExpansion {
         TarEntry entry;
         
         while((entry = tis.getNextEntry()) != null) {
-            int count;
-            byte data[] = new byte[2048];
-
             String entryName = entry.getName();
             File f = new File(destDir, entryName);
             boolean isCreated = f.getParentFile().mkdirs();
@@ -36,7 +33,9 @@ public class TarExpansion {
             if (!entry.isDirectory() && !f.getName().equals(".")) {
                 FileOutputStream fos = new FileOutputStream(f);
                 BufferedOutputStream dest = new BufferedOutputStream(fos);
-                
+
+                int count;
+                byte data[] = new byte[2048];
                 while((count = tis.read(data)) != -1) {
                     dest.write(data, 0, count);
                 }

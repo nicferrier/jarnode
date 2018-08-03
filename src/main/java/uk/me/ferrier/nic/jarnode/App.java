@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.BufferedReader;
@@ -159,6 +160,40 @@ bash script
 
      */
 
+    static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
+
+    static File nodeDist(File nodeAppJarDir) throws IOException {
+        String OS = System.getProperty("os.name");
+        boolean isWin = OS.startsWith("Windows");
+
+        File nodeDistDir =  new File(nodeAppJarDir, ".node-dist");
+        if (nodeDistDir.exists()) {
+            File[] ls = nodeDistDir.listFiles();
+            for (File file : ls) {
+                String baseFileName = file.getName();
+                if (baseFileName.endsWith(".tar.xz")
+                    && baseFileName.startsWith("node-")) {
+
+                    File nodeDist = new File(NODE_DISTS_ENV, baseFileName);
+                    if (!nodeDist.exists()) {
+                        System.out.println("dist out " + nodeDist);
+                        FileInputStream fin = new FileInputStream(file);
+                        FileOutputStream fout = new FileOutputStream(nodeDist);
+                        int red;
+                        byte[] block = new byte[5000];
+                        while ((red = fin.read(block, 0, 5000)) != -1) {
+                            fout.write(block, 0, red);
+                        }
+                        fout.close();
+                        fin.close();
+                        return nodeDist;
+                    }
+                }
+            }
+        }
+#        return new File("/not-exists");
+    }
+
     public static void main(String[] args) throws IOException
     {
         String path = App.class
@@ -170,6 +205,9 @@ bash script
         File nodeAppJarDir = extractJar(path);
         fixPerms(nodeAppJarDir);
         copyResourcesFiles(nodeAppJarDir);
+
+        // See if we can find a node dist
+        nodeDist(nodeAppJarDir);
 
         // Find node in the PATH
         String OS = System.getProperty("os.name");
