@@ -37,8 +37,8 @@ public class TarTest extends TestCase
      */
     public void testApp() throws Exception
     {
-        File temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
-        if(!(temp.delete())) throw new IOException("can't delete the temp file");
+        File temp = File.createTempFile("tartemp", Long.toString(System.nanoTime()));
+        if(!(temp.delete())) throw new IOException("can't delete the tartemp file");
         if(!(temp.mkdir())) throw new IOException("can't make the directory");
 
         try {

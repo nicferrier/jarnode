@@ -104,7 +104,7 @@ public class AppTest extends TestCase
         try {
             // #1 - Make a directory with a node dist in it, like in an artifact
 
-            File dists = new File(temp, ".node-dist");
+            File dists = new File(temp, ".node-dists");
             dists.mkdirs();
 
             // #2 - Copy the nodejs binary to there, , as if it came from an artifact
@@ -128,13 +128,25 @@ public class AppTest extends TestCase
             if(!(nodeDists.mkdir())) throw new IOException("can't make the directory");
 
             try {
+                // #4 - Set the NODE DISTS variable to the one we just made
                 App.NODE_DISTS_ENV = nodeDists.getCanonicalPath();
-                File newDist = App.nodeDist(temp);
 
-                System.out.println("newDist " + newDist);
+                // #5 - Do the App - this should install node in the NODE DISTS dir
+                File newDist = App.expandNodeDist(temp);
+
+                // General tests about the state of that
                 assertTrue(newDist != null);
                 assertTrue(newDist.exists());
-                assertTrue(newDist.isFile());
+                assertTrue(newDist.isDirectory());
+
+                // These are more specific tests
+                String openSSLPath = "include/node/openssl/archs/VC-WIN32/asm/include/progs.h";
+                String packageStreamJs = "lib/node_modules/npm/lib/search/format-package-stream.js";
+                String nodeBin = "bin/node";
+                
+                assertTrue(new File(newDist, openSSLPath).exists());
+                assertTrue(new File(newDist, packageStreamJs).exists());
+                assertTrue(new File(newDist, nodeBin).exists());
             }
             finally {
                 Files.walk(nodeDists.toPath())

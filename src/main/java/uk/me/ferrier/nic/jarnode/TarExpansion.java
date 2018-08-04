@@ -19,12 +19,17 @@ import org.kamranzafar.jtar.TarHeader;
 
 
 public class TarExpansion {
-    public static void expandTar(InputStream tarXzIn, String destDir) throws Exception {
+    public static File expandTar(InputStream tarXzIn, String destDir) throws Exception {
         InputStream i2 = new XZInputStream(tarXzIn);
         InputStream i3 = new BufferedInputStream(i2);
         TarInputStream tis = new TarInputStream(i3);
-        TarEntry entry;
+        TarEntry entry = tis.getNextEntry();
+
+        String topEntryName = entry.getName();
+        File top = new File(destDir, topEntryName);
+        if (top.exists()) return top;
         
+        // Now the rest of the tar
         while((entry = tis.getNextEntry()) != null) {
             String entryName = entry.getName();
             File f = new File(destDir, entryName);
@@ -58,5 +63,6 @@ public class TarExpansion {
         }
   
         tis.close();
+        return top;
     }
 }

@@ -140,82 +140,49 @@ public class App
         }
     }
 
-    /*
-
-      support python
-
-      instead of execing python we have to generate a script and exec that in a shell - this is so venvs work:
-
-source .venv/bin/activate
-python t.py
-
-      and then the flow looks something like this:
-
-mkdir demojarplace
-cp demoapp/demo.jar demojarplace
-cd demojarplace
-jar xvf demo.jar 
-cp ~/script . 
-bash script
-
-     */
-
+    static String OS = System.getProperty("os.name");
+    static boolean isWin = OS.startsWith("Windows");
     static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
 
-    static File nodeDist(File nodeAppJarDir) throws IOException {
+    static File expandNodeDist(File nodeAppJarDir) throws Exception {
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
 
-        File nodeDistDir =  new File(nodeAppJarDir, ".node-dist");
+        System.out.println("jarnode - "
+                           + "nodeAppJarDir: " + nodeAppJarDir
+                           + " OS: " + OS
+                           + " is Windows? " + isWin);
+
+        File nodeDistDir =  new File(nodeAppJarDir, ".node-dists");
         if (nodeDistDir.exists()) {
+            System.out.println("jarnode - nodeDistDir: " + nodeDistDir);
+
             File[] ls = nodeDistDir.listFiles();
             for (File file : ls) {
                 String baseFileName = file.getName();
                 if (baseFileName.endsWith(".tar.xz")
                     && baseFileName.startsWith("node-")) {
 
-                    File nodeDist = new File(NODE_DISTS_ENV, baseFileName);
-                    if (!nodeDist.exists()) {
-                        System.out.println("dist out " + nodeDist);
+                    System.out.println("jarnode - nodeDist: " + file);
+
+                    File nodeDist = new File(NODE_DISTS_ENV);
+                    if (nodeDist.exists()) {
                         FileInputStream fin = new FileInputStream(file);
-                        FileOutputStream fout = new FileOutputStream(nodeDist);
-                        int red;
-                        byte[] block = new byte[5000];
-                        while ((red = fin.read(block, 0, 5000)) != -1) {
-                            fout.write(block, 0, red);
-                        }
-                        fout.close();
+                        File nodeVersion = TarExpansion.expandTar(fin, nodeDist.getCanonicalPath());
                         fin.close();
-                        return nodeDist;
+                        return nodeVersion;
                     }
                 }
             }
         }
-#        return new File("/not-exists");
+        // If we can't find a packaged node install return this
+        return new File("/no-node");
     }
 
-    public static void main(String[] args) throws IOException
-    {
-        String path = App.class
-            .getProtectionDomain()
-            .getCodeSource()
-            .getLocation()
-            .getPath();
-
-        File nodeAppJarDir = extractJar(path);
-        fixPerms(nodeAppJarDir);
-        copyResourcesFiles(nodeAppJarDir);
-
-        // See if we can find a node dist
-        nodeDist(nodeAppJarDir);
-
-        // Find node in the PATH
-        String OS = System.getProperty("os.name");
-        boolean isWin = OS.startsWith("Windows");
-
+    static String pathFind() {
         String pathVar = System
             .getenv()
-            .get(OS.startsWith("Windows") ? "Path" : "PATH");
+            .get(isWin ? "Path" : "PATH");
         String[] pathParts = pathVar.split(File.pathSeparator);
         List<String> pathPartList = Arrays.asList(pathParts);
         List<Entry> nodePath = pathPartList.stream()
@@ -230,7 +197,30 @@ bash script
             System.exit(1);
         }
         String nodeExe = nodePath.get(0).name + "/node";
+        return nodeExe;
+    }
+
+    public static void main(String[] args) throws Exception
+    {
+        String path = App.class
+            .getProtectionDomain()
+            .getCodeSource()
+            .getLocation()
+            .getPath();
+
+        File nodeAppJarDir = extractJar(path);
+        fixPerms(nodeAppJarDir);
+        copyResourcesFiles(nodeAppJarDir);
+
+        // See if we can find a node dist and install it if so
+        File nodeDist = expandNodeDist(nodeAppJarDir);
+        String nodeExe = nodeDist.exists()
+            ? new File(nodeDist, "bin/node").getCanonicalPath()
+            : pathFind();
+
+        // Fix the exe
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
+
         ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
@@ -246,7 +236,9 @@ bash script
                     }
                 }
             });
-        BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+        InputStreamReader inr = new InputStreamReader(p.getInputStream());
+        BufferedReader r = new BufferedReader(inr);
         String line;
         while (true) {
             line = r.readLine();

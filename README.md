@@ -14,7 +14,6 @@ that you can just:
 java -jar nodejs-uberjar-1.0.16.jar
 ```
 
-
 and your node app will run.
 
 
@@ -208,7 +207,8 @@ automatic extraction of the app on exec.
 
 ## When it unpacks do we leave a mess everywhere?
 
-The jar unpacks to the same directory as the jar is in into a directory with a leading `.`.
+The jar unpacks to the same directory as the jar is in into a
+directory with a leading `.`.
 
 eg:
 
@@ -222,14 +222,33 @@ the node app will exist under there.
 If you run the app again it will unpack to the same directory,
 deleting the directory first.
 
+
 ## I lost state I stored in the nodeapp when I restarted!
 
 Yes. Because when you restart we delete the directory. 
 
-Make a containining directory and store the state there?
+Make a containing directory and store the state there?
 
 Or work out another way of doing it and tell us?
 
+
+## How do I get the right version of node onto the target machine?
+
+jarnode will help you install a target version of node, if you package
+node in your jarnode artifact.
+
+As jarnode unpacks your app it:
+
+* looks for a `.node-dist` directory
+* if it exists and it contains a `.tar.xz` file beginning with `node-`
+* if there is a NODE_DISTS environment variable that points to a directory that exists
+* then the node distribution is unpacked into that directory
+* but if the node distribution is already there the copy is abandoned
+
+## node dist-less artifacts
+
+If a distribution is not delivered in the artifact then jarnode
+attempts to use a node from PATH.
 
 ## Could this all be easier?
 
