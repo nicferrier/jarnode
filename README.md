@@ -259,6 +259,12 @@ Of course. There are many ways to do most things.
 
 But this way is highly maven, and therefore, enterprise, empathetic.
 
+## See Also
+
+I've put a demo nodejs distribution template [here](https://github.com/nicferrier/jarnode-node-dist-demo).
+
+And I've put a demo JarNode template node app [here](https://github.com/nicferrier/jarnode-demo/).
+
 
 ## Acknowledgements
 
