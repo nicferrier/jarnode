@@ -245,14 +245,19 @@ As jarnode unpacks your app it:
 * then the node distribution is unpacked into that directory
 * but if the node distribution is already there the copy is abandoned
 
-## node dist-less artifacts
+Further documentation on this is available in [NODEDISTS](docs/NODEDISTS.md)
+
+### node dist-less artifacts
 
 If a distribution is not delivered in the artifact then jarnode
 attempts to use a node from PATH.
 
+
 ## Could this all be easier?
 
-I expect so. I'm just marvelling in the spectacle right now though!
+Of course. There are many ways to do most things.
+
+But this way is highly maven, and therefore, enterprise, empathetic.
 
 
 ## Acknowledgements
@@ -260,3 +265,6 @@ I expect so. I'm just marvelling in the spectacle right now though!
 @rajshahuk had this idea in the first place.
 
 @danielflower helped with the maven and the uploading to central.maven.com
+
+@jameslockwood has helped by being a *real* Javascript programmer that
+wants to use it. He's contributed patches that are wonderful.
