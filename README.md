@@ -1,3 +1,5 @@
+# Package Node apps with Java's Maven
+
 Working in an enterprise Java is king. We have rules about storing
 things in artifact repositories like Sonatype's Nexus or Artifactory
 for Maven.
@@ -16,6 +18,16 @@ java -jar nodejs-uberjar-1.0.16.jar
 
 and your node app will run.
 
+## What's the latest version?
+
+```xml
+<dependency>
+  <groupId>uk.me.ferrier.nic</groupId>
+  <artifactId>jarnode</artifactId>
+  <version>1.0.26</version>
+</dependency>
+```
+
 
 ## How does it work?
 
@@ -32,7 +44,7 @@ You need this POM as pom.xml in your nodejs project:
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
   <name>nodetest</name>                             <!-- and the project name          -->
-  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+  <url>https://github.com/nicferrier/package</url>  <!-- and the url!                  -->
 
   <!-- Nothing else should be changed!!                                                -->
 
@@ -40,7 +52,7 @@ You need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0.16</version>
+      <version>1.0.26</version>
     </dependency>
   </dependencies>
   
