@@ -113,7 +113,7 @@ You need this POM as pom.xml in your nodejs project:
 The values that need changing are the ones that describe the resulting
 artifact, your nodejs app.
 
-```
+```xml
   <groupId>uk.me.ferrier.nic</groupId>              <!-- change this!                  -->
   <artifactId>nodetest</artifactId>                 <!-- and this!                     -->
   <packaging>jar</packaging>
