@@ -119,7 +119,7 @@ artifact, your nodejs app.
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
   <name>nodetest</name>                             <!-- and the project name          -->
-  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+  <url>https://github.com/nicferrier/package</url>  <!-- and the url!                  -->
 ```
 
 So choose a maven groupid and artifactid that follow Maven
