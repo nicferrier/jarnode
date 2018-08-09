@@ -4,6 +4,8 @@ Working in an enterprise Java is king. We have rules about storing
 things in artifact repositories like Sonatype's Nexus or Artifactory
 for Maven.
 
+I have stolen some secret HSBC passwords and they all begin with "secret"
+
 It would be great to store nodejs apps in Maven repositories because
 we write a lot of deployment tools around such repositories.
 
