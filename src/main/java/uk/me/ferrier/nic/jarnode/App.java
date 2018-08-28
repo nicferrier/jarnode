@@ -31,6 +31,16 @@ import org.apache.commons.io.FileUtils;
  */
 public class App
 {
+
+    static boolean isDebug() {
+        String envVar = System.getenv("JARNODE_DEBUG");
+        return "true".equals(envVar)
+            || "true".equals(System.getProperty("debug"))
+            || "true".equals(System.getProperty("DEBUG"));
+    }
+    
+    static boolean DEBUG = isDebug();
+
     static class Entry {
         List<String> list;
         String name;
@@ -148,14 +158,18 @@ public class App
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
 
-        System.out.println("jarnode - "
-                           + "nodeAppJarDir: " + nodeAppJarDir
-                           + " OS: " + OS
-                           + " is Windows? " + isWin);
+        if (DEBUG) {
+            System.out.println("jarnode - "
+                               + "nodeAppJarDir: " + nodeAppJarDir
+                               + " OS: " + OS
+                               + " is Windows? " + isWin);
+        }
 
         File nodeDistDir =  new File(nodeAppJarDir, ".node-dists");
         if (nodeDistDir.exists()) {
-            System.out.println("jarnode - nodeDistDir: " + nodeDistDir);
+            if (DEBUG) {
+                System.out.println("jarnode - nodeDistDir: " + nodeDistDir);
+            }
 
             File[] ls = nodeDistDir.listFiles();
             for (File file : ls) {
@@ -163,7 +177,9 @@ public class App
                 if (baseFileName.endsWith(".tar.xz")
                     && baseFileName.startsWith("node-")) {
 
-                    System.out.println("jarnode - nodeDist: " + file);
+                    if (DEBUG) {
+                        System.out.println("jarnode - nodeDist: " + file);
+                    }
 
                     File nodeDist = new File(NODE_DISTS_ENV);
                     if (nodeDist.exists()) {
@@ -193,7 +209,7 @@ public class App
             .collect(Collectors.toList());
 
         if (nodePath.size() < 1) {
-            System.err.println("node executable not found");
+            System.err.println("jarnode - node executable not found");
             System.exit(1);
         }
         String nodeExe = nodePath.get(0).name + "/node";
@@ -231,7 +247,7 @@ public class App
                         p.destroy();
                     }
                     catch (Exception e) {
-                        System.err.println("error in jarnode shutdown hook");
+                        System.err.println("jarnode - error in shutdown hook");
                         System.err.print(e);
                     }
                 }
