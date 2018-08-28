@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.BufferedReader;
@@ -213,12 +214,49 @@ bash script
         JSONObject packageJsonJarnodeConfig = getJarnodeJsonObject(packageJson);
 
         // Find node in the PATH
+       static String OS = System.getProperty("os.name");
+       static boolean isWin = OS.startsWith("Windows");
+       static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
+
+        static File expandNodeDist(File nodeAppJarDir) throws Exception {  
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
 
+        System.out.println("jarnode - "
+                           + "nodeAppJarDir: " + nodeAppJarDir
+                           + " OS: " + OS
+                           + " is Windows? " + isWin);
+
+        File nodeDistDir =  new File(nodeAppJarDir, ".node-dists");
+        if (nodeDistDir.exists()) {
+            System.out.println("jarnode - nodeDistDir: " + nodeDistDir);
+
+            File[] ls = nodeDistDir.listFiles();
+            for (File file : ls) {
+                String baseFileName = file.getName();
+                if (baseFileName.endsWith(".tar.xz")
+                    && baseFileName.startsWith("node-")) {
+
+                    System.out.println("jarnode - nodeDist: " + file);
+
+                    File nodeDist = new File(NODE_DISTS_ENV);
+                    if (nodeDist.exists()) {
+                        FileInputStream fin = new FileInputStream(file);
+                        File nodeVersion = TarExpansion.expandTar(fin, nodeDist.getCanonicalPath());
+                        fin.close();
+                        return nodeVersion;
+                    }
+                }
+            }
+        }
+        // If we can't find a packaged node install return this
+        return new File("/no-node");
+    }
+
+    static String pathFind() {
         String pathVar = System
             .getenv()
-            .get(OS.startsWith("Windows") ? "Path" : "PATH");
+            .get(isWin ? "Path" : "PATH");
         String[] pathParts = pathVar.split(File.pathSeparator);
         List<String> pathPartList = Arrays.asList(pathParts);
         List<Entry> nodePath = pathPartList.stream()
@@ -233,6 +271,28 @@ bash script
             System.exit(1);
         }
         String nodeExe = nodePath.get(0).name + "/node";
+        return nodeExe;
+    }
+
+    public static void main(String[] args) throws Exception
+    {
+        String path = App.class
+            .getProtectionDomain()
+            .getCodeSource()
+            .getLocation()
+            .getPath();
+
+        File nodeAppJarDir = extractJar(path);
+        fixPerms(nodeAppJarDir);
+        copyResourcesFiles(nodeAppJarDir);
+
+        // See if we can find a node dist and install it if so
+        File nodeDist = expandNodeDist(nodeAppJarDir);
+        String nodeExe = nodeDist.exists()
+            ? new File(nodeDist, "bin/node").getCanonicalPath()
+            : pathFind();
+
+        // Fix the exe
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
 
         ProcessBuilder builder = new ProcessBuilder(
@@ -254,7 +314,9 @@ bash script
                     }
                 }
             });
-        BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+        InputStreamReader inr = new InputStreamReader(p.getInputStream());
+        BufferedReader r = new BufferedReader(inr);
         String line;
         while (true) {
             line = r.readLine();

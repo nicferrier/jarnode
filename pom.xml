@@ -50,6 +50,16 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.tukaani</groupId>
+      <artifactId>xz</artifactId>
+      <version>1.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kamranzafar</groupId>
+      <artifactId>jtar</artifactId>
+      <version>2.3</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.5</version>
@@ -75,6 +85,17 @@
       </testResource>
     </testResources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <nonFilteredFileExtensions>
+            <nonFilteredFileExtension>xz</nonFilteredFileExtension>
+            <nonFilteredFileExtension>jar</nonFilteredFileExtension>
+          </nonFilteredFileExtensions>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>com.github.danielflower.mavenplugins</groupId>
         <artifactId>multi-module-maven-release-plugin</artifactId>

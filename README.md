@@ -1,3 +1,5 @@
+# Package Node apps with Java's Maven
+
 Working in an enterprise Java is king. We have rules about storing
 things in artifact repositories like Sonatype's Nexus or Artifactory
 for Maven.
@@ -14,8 +16,17 @@ that you can just:
 java -jar nodejs-uberjar-1.0.16.jar
 ```
 
-
 and your node app will run.
+
+## What's the latest version?
+
+```xml
+<dependency>
+  <groupId>uk.me.ferrier.nic</groupId>
+  <artifactId>jarnode</artifactId>
+  <version>1.0.26</version>
+</dependency>
+```
 
 
 ## How does it work?
@@ -35,7 +46,7 @@ You also need this POM as pom.xml in your nodejs project:
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
   <name>nodetest</name>                             <!-- and the project name          -->
-  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+  <url>https://github.com/nicferrier/package</url>  <!-- and the url!                  -->
 
   <!-- Nothing else should be changed!!                                                -->
 
@@ -43,7 +54,7 @@ You also need this POM as pom.xml in your nodejs project:
     <dependency>
       <groupId>uk.me.ferrier.nic</groupId>
       <artifactId>jarnode</artifactId>
-      <version>1.0.16</version>
+      <version>1.0.26</version>
     </dependency>
   </dependencies>
 
@@ -104,13 +115,13 @@ You also need this POM as pom.xml in your nodejs project:
 The values that need changing are the ones that describe the resulting
 artifact, your nodejs app.
 
-```
+```xml
   <groupId>uk.me.ferrier.nic</groupId>              <!-- change this!                  -->
   <artifactId>nodetest</artifactId>                 <!-- and this!                     -->
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>                   <!-- you'll be changing this too!  -->
   <name>nodetest</name>                             <!-- and the project name          -->
-  <url>https://github.com/nicferrier/jarnode</url>  <!-- and the url!                  -->
+  <url>https://github.com/nicferrier/package</url>  <!-- and the url!                  -->
 ```
 
 So choose a maven groupid and artifactid that follow Maven
@@ -210,7 +221,8 @@ automatic extraction of the app on exec.
 
 ## When it unpacks do we leave a mess everywhere?
 
-The jar unpacks to the same directory as the jar is in into a directory with a leading `.`.
+The jar unpacks to the same directory as the jar is in into a
+directory with a leading `.`.
 
 eg:
 
@@ -240,14 +252,43 @@ The max memory allocation is otherwise set at 512MB, as per node defaults.
 
 Yes. Because when you restart we delete the directory.
 
-Make a containining directory and store the state there?
+Make a containing directory and store the state there?
 
 Or work out another way of doing it and tell us?
 
 
+## How do I get the right version of node onto the target machine?
+
+jarnode will help you install a target version of node, if you package
+node in your jarnode artifact.
+
+As jarnode unpacks your app it:
+
+* looks for a `.node-dist` directory
+* if it exists and it contains a `.tar.xz` file beginning with `node-`
+* if there is a NODE_DISTS environment variable that points to a directory that exists
+* then the node distribution is unpacked into that directory
+* but if the node distribution is already there the copy is abandoned
+
+Further documentation on this is available in [NODEDISTS](docs/NODEDISTS.md)
+
+### node dist-less artifacts
+
+If a distribution is not delivered in the artifact then jarnode
+attempts to use a node from PATH.
+
+
 ## Could this all be easier?
 
-I expect so. I'm just marvelling in the spectacle right now though!
+Of course. There are many ways to do most things.
+
+But this way is highly maven, and therefore, enterprise, empathetic.
+
+## See Also
+
+I've put a demo nodejs distribution template [here](https://github.com/nicferrier/jarnode-node-dist-demo).
+
+And I've put a demo JarNode template node app [here](https://github.com/nicferrier/jarnode-demo/).
 
 
 ## Acknowledgements
@@ -255,3 +296,6 @@ I expect so. I'm just marvelling in the spectacle right now though!
 @rajshahuk had this idea in the first place.
 
 @danielflower helped with the maven and the uploading to central.maven.com
+
+@jameslockwood has helped by being a *real* Javascript programmer that
+wants to use it. He's contributed patches that are wonderful.

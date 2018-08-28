@@ -5,10 +5,15 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Files;
 
+import java.util.Comparator;
 import java.util.Arrays;
 
 import org.json.simple.JSONObject;
@@ -16,8 +21,7 @@ import org.json.simple.JSONObject;
 /**
  * Unit test for simple App.
  */
-public class AppTest
-    extends TestCase
+public class AppTest extends TestCase
 {
     /**
      * Create the test case
@@ -40,6 +44,7 @@ public class AppTest
     /**
      * Test the file creation and destruction logic.
      */
+
     public void testApp() throws IOException
     {
         String targetJar = new File("./somejar.jar").getCanonicalPath();
@@ -133,5 +138,71 @@ public class AppTest
         fakeJarnodeConfig.put("memoryLimit", "64");
         String result3 = App.getNodeMemoryLimitArg(fakeJarnodeConfig);
         assertTrue( result3.equals("--max-old-space-size=64") );
+
+    public void testNodeDist() throws Exception {
+        File temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
+        if(!(temp.delete())) throw new IOException("can't delete the temp file");
+        if(!(temp.mkdir())) throw new IOException("can't make the directory");
+
+        try {
+            // #1 - Make a directory with a node dist in it, like in an artifact
+
+            File dists = new File(temp, ".node-dists");
+            dists.mkdirs();
+
+            // #2 - Copy the nodejs binary to there, , as if it came from an artifact
+            String nodePath = "node-v10.8.0-linux-x64.tar.xz";
+            InputStream in = this.getClass().getResourceAsStream("/" + nodePath);
+            
+            File distFile = new File(dists, nodePath);
+            FileOutputStream dest = new FileOutputStream(distFile);
+            
+            int count;
+            byte data[] = new byte[2048];
+            while((count = in.read(data)) != -1) {
+                dest.write(data, 0, count);
+            }
+            dest.close();
+
+            // #3 - Make a directory looking like a system's node-dists directory
+
+            File nodeDists = File.createTempFile("node-dists", Long.toString(System.nanoTime()));
+            if(!(nodeDists.delete())) throw new IOException("can't delete the temp file");
+            if(!(nodeDists.mkdir())) throw new IOException("can't make the directory");
+
+            try {
+                // #4 - Set the NODE DISTS variable to the one we just made
+                App.NODE_DISTS_ENV = nodeDists.getCanonicalPath();
+
+                // #5 - Do the App - this should install node in the NODE DISTS dir
+                File newDist = App.expandNodeDist(temp);
+
+                // General tests about the state of that
+                assertTrue(newDist != null);
+                assertTrue(newDist.exists());
+                assertTrue(newDist.isDirectory());
+
+                // These are more specific tests
+                String openSSLPath = "include/node/openssl/archs/VC-WIN32/asm/include/progs.h";
+                String packageStreamJs = "lib/node_modules/npm/lib/search/format-package-stream.js";
+                String nodeBin = "bin/node";
+                
+                assertTrue(new File(newDist, openSSLPath).exists());
+                assertTrue(new File(newDist, packageStreamJs).exists());
+                assertTrue(new File(newDist, nodeBin).exists());
+            }
+            finally {
+                Files.walk(nodeDists.toPath())
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+            }
+        }
+        finally {
+            Files.walk(temp.toPath())
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+        }
     }
 }
