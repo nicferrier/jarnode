@@ -25,6 +25,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.commons.io.FileUtils;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.json.simple.JSONObject;
+
+
 /**
  * Boot node apps by reading them out of the uberjar.
  *
@@ -65,7 +70,6 @@ public class App
                         Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
-                    
                     @Override
                     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                         Files.delete(dir);
@@ -140,11 +144,81 @@ public class App
         }
     }
 
-    static String OS = System.getProperty("os.name");
-    static boolean isWin = OS.startsWith("Windows");
-    static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
+    static JSONObject getPackageJsonObject(File jarDir) {
+        try {
+            JSONParser parser = new JSONParser();
+            FileReader jsonFile = new FileReader(jarDir.getPath() + "/package.json");
+            JSONObject json = (JSONObject) parser.parse(jsonFile);
+            return json;
+        }
+        catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-    static File expandNodeDist(File nodeAppJarDir) throws Exception {
+    static JSONObject getJarnodeJsonObject(JSONObject packageJson) {
+        if(packageJson == null){
+            return null;
+        }
+        return (JSONObject) packageJson.get("jarnode");
+    }
+
+    static String getNodeEntryPointFilename(JSONObject packageJson) {
+        String defaultFilename = "server.js";
+        String customFilename = packageJson != null ? (String) packageJson.get("main") : null;
+        String fileName = (customFilename != null && !customFilename.isEmpty()) ? customFilename : defaultFilename;
+        return fileName;
+    }
+
+    static String getNodeMemoryLimitArg(JSONObject jarnodeConfig) {
+        String defaultLimit = "512"; // 512MB is node default
+        String customLimit = jarnodeConfig != null ? (String) jarnodeConfig.get("memoryLimit") : null;
+        String memLimit = (customLimit != null && !customLimit.isEmpty()) ? customLimit : defaultLimit;
+        return "--max-old-space-size=" + memLimit;
+    }
+
+    /*
+
+      support python
+
+      instead of execing python we have to generate a script and exec that in a shell - this is so venvs work:
+
+source .venv/bin/activate
+python t.py
+
+      and then the flow looks something like this:
+
+mkdir demojarplace
+cp demoapp/demo.jar demojarplace
+cd demojarplace
+jar xvf demo.jar
+cp ~/script .
+bash script
+
+     */
+
+    public static void main(String[] args) throws IOException
+    {
+        String path = App.class
+            .getProtectionDomain()
+            .getCodeSource()
+            .getLocation()
+            .getPath();
+
+        File nodeAppJarDir = extractJar(path);
+        fixPerms(nodeAppJarDir);
+        copyResourcesFiles(nodeAppJarDir);
+
+        JSONObject packageJson = getPackageJsonObject(nodeAppJarDir);
+        JSONObject packageJsonJarnodeConfig = getJarnodeJsonObject(packageJson);
+
+        // Find node in the PATH
+       static String OS = System.getProperty("os.name");
+       static boolean isWin = OS.startsWith("Windows");
+       static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
+
+        static File expandNodeDist(File nodeAppJarDir) throws Exception {  
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
 
@@ -221,7 +295,11 @@ public class App
         // Fix the exe
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
 
-        ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
+        ProcessBuilder builder = new ProcessBuilder(
+                nodeExe,
+                getNodeEntryPointFilename(packageJson),
+                getNodeMemoryLimitArg(packageJsonJarnodeConfig));
+
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
         final Process p = builder.start();
