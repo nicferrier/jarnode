@@ -25,6 +25,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.commons.io.FileUtils;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.json.simple.JSONObject;
+
+
 /**
  * Boot node apps by reading them out of the uberjar.
  *
@@ -75,7 +80,6 @@ public class App
                         Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
-                    
                     @Override
                     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                         Files.delete(dir);
@@ -150,10 +154,86 @@ public class App
         }
     }
 
+    static JSONObject getPackageJsonObject(File jarDir) {
+        try {
+            JSONParser parser = new JSONParser();
+            FileReader jsonFile = new FileReader(jarDir.getPath() + "/package.json");
+            JSONObject json = (JSONObject) parser.parse(jsonFile);
+            return json;
+        }
+        catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static JSONObject getJarnodeJsonObject(JSONObject packageJson) {
+        if(packageJson == null){
+            return null;
+        }
+        return (JSONObject) packageJson.get("jarnode");
+    }
+
+    static String getNodeEntryPointFilename(JSONObject packageJson) {
+        String defaultFilename = "server.js";
+        String customFilename = packageJson != null ? (String) packageJson.get("main") : null;
+        String fileName = (customFilename != null && !customFilename.isEmpty()) ? customFilename : defaultFilename;
+        return fileName;
+    }
+
+    static String getNodeMemoryLimitArg(JSONObject jarnodeConfig) {
+        String defaultLimit = "512"; // 512MB is node default
+        String customLimit = jarnodeConfig != null ? (String) jarnodeConfig.get("memoryLimit") : null;
+        String memLimit = (customLimit != null && !customLimit.isEmpty()) ? customLimit : defaultLimit;
+        return "--max-old-space-size=" + memLimit;
+    }
+
+    /*
+
+      support python
+
+      instead of execing python we have to generate a script and exec that in a shell - this is so venvs work:
+
+source .venv/bin/activate
+python t.py
+
+      and then the flow looks something like this:
+
+mkdir demojarplace
+cp demoapp/demo.jar demojarplace
+cd demojarplace
+jar xvf demo.jar
+cp ~/script .
+bash script
+
+     */
+
+    // Find node in the PATH
     static String OS = System.getProperty("os.name");
     static boolean isWin = OS.startsWith("Windows");
     static String NODE_DISTS_ENV = System.getenv("NODE_DISTS");
 
+    static String pathFind() {
+        String pathVar = System
+            .getenv()
+            .get(isWin ? "Path" : "PATH");
+        String[] pathParts = pathVar.split(File.pathSeparator);
+        List<String> pathPartList = Arrays.asList(pathParts);
+        List<Entry> nodePath = pathPartList.stream()
+            .filter(p -> new File(p).exists())
+            .map(p -> new Entry(p))
+            .filter(e -> e.list.contains("node")
+                    || (isWin && e.list.contains("node.exe")))
+            .collect(Collectors.toList());
+
+        if (nodePath.size() < 1) {
+            System.err.println("jarnode - node executable not found");
+            System.exit(1);
+        }
+        String nodeExe = nodePath.get(0).name + "/node";
+        return nodeExe;
+    }
+    
     static File expandNodeDist(File nodeAppJarDir) throws Exception {
         String OS = System.getProperty("os.name");
         boolean isWin = OS.startsWith("Windows");
@@ -195,27 +275,6 @@ public class App
         return new File("/no-node");
     }
 
-    static String pathFind() {
-        String pathVar = System
-            .getenv()
-            .get(isWin ? "Path" : "PATH");
-        String[] pathParts = pathVar.split(File.pathSeparator);
-        List<String> pathPartList = Arrays.asList(pathParts);
-        List<Entry> nodePath = pathPartList.stream()
-            .filter(p -> new File(p).exists())
-            .map(p -> new Entry(p))
-            .filter(e -> e.list.contains("node")
-                    || (isWin && e.list.contains("node.exe")))
-            .collect(Collectors.toList());
-
-        if (nodePath.size() < 1) {
-            System.err.println("jarnode - node executable not found");
-            System.exit(1);
-        }
-        String nodeExe = nodePath.get(0).name + "/node";
-        return nodeExe;
-    }
-
     public static void main(String[] args) throws Exception
     {
         String path = App.class
@@ -228,6 +287,9 @@ public class App
         fixPerms(nodeAppJarDir);
         copyResourcesFiles(nodeAppJarDir);
 
+        JSONObject packageJson = getPackageJsonObject(nodeAppJarDir);
+        JSONObject packageJsonJarnodeConfig = getJarnodeJsonObject(packageJson);
+
         // See if we can find a node dist and install it if so
         File nodeDist = expandNodeDist(nodeAppJarDir);
         String nodeExe = nodeDist.exists()
@@ -237,7 +299,11 @@ public class App
         // Fix the exe
         nodeExe = isWin? nodeExe + ".exe" : nodeExe;
 
-        ProcessBuilder builder = new ProcessBuilder(nodeExe, "server.js");
+        ProcessBuilder builder = new ProcessBuilder(
+                nodeExe,
+                getNodeEntryPointFilename(packageJson),
+                getNodeMemoryLimitArg(packageJsonJarnodeConfig));
+
         builder.directory(nodeAppJarDir);
         builder.redirectErrorStream(true);
         final Process p = builder.start();

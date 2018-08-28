@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.Arrays;
 
+import org.json.simple.JSONObject;
+
 /**
  * Unit test for simple App.
  */
@@ -94,6 +96,48 @@ public class AppTest extends TestCase
         File confFilePath = new File("src/test/resources/resources_file.txt");
         boolean confFileExists = confFilePath.exists();
         assertTrue( confFileExists );
+    }
+
+    public void testGetPackageJsonObject() throws Exception {
+        String jarPath = new File("src/test/resources/demojar.jar")
+                .getCanonicalPath();
+        File extractJar = App.extractJar(jarPath);
+        File jarPathDir = new File(jarPath).getParentFile();
+        File exePath = new File(jarPathDir, ".demojar.jar");
+        JSONObject packageJson = App.getPackageJsonObject(exePath);
+        assertTrue( packageJson != null );
+    }
+
+    public void testNodeEntryPointFilenames() throws Exception {
+        // when there is no package.json
+        String result1 = App.getNodeEntryPointFilename(null);
+        assertTrue( result1.equals("server.js") );
+
+        // when there is a package.json with no main
+        JSONObject fakePackageJson = new JSONObject();
+        String result2 = App.getNodeEntryPointFilename(fakePackageJson);
+        assertTrue( result2.equals("server.js") );
+
+        // when there is a package.json with a main
+        fakePackageJson.put("main", "./entry.js");
+        String result3 = App.getNodeEntryPointFilename(fakePackageJson);
+        assertTrue( result3.equals("./entry.js") );
+    }
+
+    public void testNodeMemoryLimitArguments() throws Exception {
+        // when there is no jarnode config
+        String result1 = App.getNodeMemoryLimitArg(null);
+        assertTrue( result1.equals("--max-old-space-size=512") );
+
+        // when there is jarnode config with no memoryLimit set
+        JSONObject fakeJarnodeConfig = new JSONObject();
+        String result2 = App.getNodeMemoryLimitArg(fakeJarnodeConfig);
+        assertTrue( result2.equals("--max-old-space-size=512") );
+
+        // when there is jarnode config with memoryLimit set
+        fakeJarnodeConfig.put("memoryLimit", "64");
+        String result3 = App.getNodeMemoryLimitArg(fakeJarnodeConfig);
+        assertTrue( result3.equals("--max-old-space-size=64") );
     }
 
     public void testNodeDist() throws Exception {
