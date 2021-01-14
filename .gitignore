@@ -3,3 +3,5 @@ src/test/resources/.demojar.jar
 src/test/resources/resources_file.txt
 *.iml
 .idea
+*.swp
+
